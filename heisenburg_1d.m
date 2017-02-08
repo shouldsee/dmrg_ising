@@ -8,7 +8,7 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  
 % Number of states kept m
-m=10;
+m=20;
 % Number of iterations.  Final lattice size is 2*Niter + 2
 NIter = 1000;
 % exact energy, for comparison
