@@ -1,6 +1,10 @@
-K=-0.1;
+K=-1.95;
 ss=[-1 1]
-mmax=16;
+mmax=40;
+
+corrf=1;
+err=0;
+ra=1;
 
 oddfirst=reshape(reshape(1:8,2,4)',1,[]);
 [msh1p msh1 msh2p msh2]=ndgrid(ss,ss,ss,ss);
@@ -30,9 +34,11 @@ else
     tp=T_ml+shiftdim(T_ml,-4)+permute(W,[5 6 1 2 7 8 3 4]);
     tpr=reshape(permute(tp,oddfirst),sqrt(numel(tp)),[]);
     
-    [Vr,D,Vl]=eig((tpr));
+    [Vr,D,Vl]=eigs((tpr),1,'la');
     d=diag(D);
-    [~,id]=max(real([d(1) d(end)]));
+    id=1;
+    Vl=Vr;
+%     [~,id]=max(real([d(1) d(end)]));
 %     phi=reshape()
 %     Vl=fliplr(Vl);
 %     Vr=shiftdim(fliplr(Vr),-1);
@@ -47,7 +53,7 @@ else
     
 %     imagesc(rhoL)
     %%
-    [T,S,U]=svd(rhoL);
+    [T,S,U]=svds(rhoL,mmax);
     Ol=reshape(T(:,1:mmax)',[mmax,m,2]);
     Ql=shiftdim(reshape(U(:,1:mmax),[m 2 mmax]),-3);
     s=diag(S);
@@ -57,8 +63,9 @@ else
     Tst=Ol+T_mlo+Ql;
     T_mpl=Ol + T_mlo +Ql + permute((W),[5,6,1,7,2,8,3,4]);
     T_mpl=squeeze(sum(reshape(T_mpl,m,[],m,2,2),2));
-    %%
     
+    %%
+%     T_mpl=(T_mpl+permute(T_mpl,[2 1 4 3]))/2;
     T_mplr=(T_mpl)-mean(T_mpl(:));
     
 end
