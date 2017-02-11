@@ -1,10 +1,12 @@
 function[phi psi]=superblock(T_ml,W)
-global oper opts
+global oper opts oper1
 oddfirst=reshape(reshape(1:8,2,4)',1,[]);
-tp=oper(oper(T_ml,shiftdim(T_ml,-4)),permute(W,[5 6 1 2 7 8 3 4]));
+tp=oper1(oper1(T_ml,shiftdim(T_ml,-4)),permute(W,[5 6 1 2 7 8 3 4]));
 ptp=permute(tp,oddfirst);
-T_2m=square(ptp);
-[Vr,D,Vl]=eigs((T_2m),1,'SA',opts);
+% T_2m=sparse(square(ptp));
+T_2m=(square(ptp));
+
+[Vr,D,Vl]=eigs((T_2m),1,'LM',opts);
 % d=diag(D);
 id=1;
 Vl=Vr;

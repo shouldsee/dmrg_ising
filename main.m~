@@ -1,8 +1,8 @@
 K=0.44;
 ss=[-1 1]
-mmax=20;
+mmax=30;
 global oper opts m oper1
-opt.renorm=0;
+opt.renorm=1;
 opt.decomp='eig';
 corrf=1;
 err=1;
@@ -39,12 +39,7 @@ Ks=1./Ts;
 % Ks=-0.20;
 countmax=10;
 % count=0;
-corrs=0.*Ks;
-mags=0*Ks;
-Kps=0.*Ks;
-idx=0;
 for K=Ks;
-idx=idx+1; 
 T=1/K;
 err=1;
 
@@ -56,34 +51,28 @@ T_ml=W;
 count=0;
 while ((err> 1e-15|2*m<mmax )&count<countmax);
     m=size(T_ml,1);
-    try
-        [phi,psi]=superblock(T_ml,W);
-        rhoL=squeeze(sum(sum(oper(phi, psi),3),4));
-%         [corrfnew,mag]=NNcorr(phi,psi,ss);
-        p=reshape(oper(squeeze(phi),squeeze(psi)),[m 2 m 2]);    
-        pmag=squeeze(sum(sum(p,1),3));
-        Kp=log(pmag(2)/pmag(1))/2;
-        ssj=shiftdim(ss,-2);        
-%         corrf_pre2=p.*(ss.*ssj);....*shiftdim(ss,-2);
-        corrf_pre2=pmag.*ss.*(ss');
-        msite=ss+ssj;
-        mag_pre=p.*msite;
-        mag=sum(mag_pre(:));
-        corrfnew=sum(corrf_pre2(:));
-        corrf=corrfnew;
-    catch ERR
-        ERR
-        fprintf('errored at rho \n')
-    end
-        
-    if 4*m<=2*mmax
+        if 4*m<=2*mmax
         % tp=bsxfun(@times,T_ml,shiftdim(W,-2));
         tp=bsxfun(oper1,T_ml,shiftdim(W,-2));
         tp=permute(tp,[1 3 2 4 5 6]);
         T_mplr=reshape(tp,2*m,2*m,2,2);
         T_mprr=T_mplr;
     
-    elseif opt.renorm;
+    try
+        [phi,psi]=superblock(T_ml,W);
+        rhoL=squeeze(sum(sum(oper(phi, psi),3),4));
+        [corrfnew]=NNcorr(phi,psi,ss);
+%         smat=reshape(repmat(ss,[m 1]),[],1);
+%         corrfnew=trace(square(permute(log(T_ml),[1 3 2 4]))*rhoL);
+%         err=abs(corrfnew-corrf);
+        corrf=corrfnew;
+    catch ERR
+        ERR
+        fprintf('errored at rho \n')
+    end
+        
+
+    if opt.renorm;
 %             D=rot90(D,2);
         count=count+1;
         if strcmp(opt.decomp,'svd');
@@ -130,9 +119,7 @@ while ((err> 1e-15|2*m<mmax )&count<countmax);
     drawnow
 %     pause(0.5)
     end% T_ml=
-    corrs(idx)=corrf;
-    mags(idx)=mag;
-    Kps(idx)=Kp;
+    corrs=[corrs,corrf];
 end
 %%
 % plot(Ks,[0 diff(2*corrs)]);
@@ -141,17 +128,14 @@ figure(3)
 hold off
 Tsp=Ts;
 plot(Ts,2*corrs)
-% plot(Ks,Kps)
 % plot(Ts,corrs)
 %%
 bkup.corr{mmax}=corrs;
-bkup.mag{mmax}=mags;
 bkup.Ts{mmax}=Ts;
 %%
 % clf  
 hold on
-plot(Ts,mags);
-for i=[1,2,16,30,32,40,42,128]      
+for i=[16,30,32,40,42,128]      
     try
     plot(bkup.Ts{i},2*bkup.corr{i});
     end
